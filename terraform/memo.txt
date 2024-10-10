@@ -1,14 +1,37 @@
-#モジュールについて
+# terraform init
+    -upgrade
+        terraformやモジュールのバージョンを変えたときにつける。つけないと、アップグレード/ダウングレードできない。
+
+# terraform plan
+    <planを出力するファイル>
+        planをファイル二出力する。applyするときにこのファイルを指定すると、yesなしでapplyする
+
+# terraform show
+    <planファイル> -json
+        json形式でplanファイルを出力する。
+
+# terraform apply
+    <planファイル>
+        tf planで出力したファイルを指定すると、yesなしでapplyする
+    -var
+        変数をdefault以外で初期化する場合に指定する。defaultが設定されていない場合や、defaultと違う値にしたい場合に指定する。
+
+# terraform output
+    -raw
+        ""をつけないで出力
+
+# モジュールについて
 ローカルモジュールとリモートモジュールがある。
 
-#ローカルモジュール
-    ローカル環境に作成舌モジュールのこと
+# ローカルモジュール
+    ローカル環境に作成したモジュールのこと
 
-#リモートモジュールについて
+# リモートモジュールについて
     gitリポジトリ上など、リモートで管理されているモジュールのこと
     .terraform/modules/配下にダウンロードされる。書き込みは禁止。
     リモートモジュールの更新を適用するには、tf init --update もしくは tf getコマンドを実行する。
  
-#機密情報を含む可能性のあるファイルについて
+# 機密情報を含む可能性のあるファイルについて
     tf plan -out <out file> によって出力したプランファイル
     terraform.tfvars
+
