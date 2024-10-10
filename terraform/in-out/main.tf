@@ -22,42 +22,33 @@ module "vpc" {
   enable_nat_gateway = true
   enable_vpn_gateway = var.enable_vpn_gateway
 
-  tags = {
-    project     = "project-alpha",
-    environment = "dev"
-  }
+  tags = var.resource_tags
 }
 
 module "app_security_group" {
   source  = "terraform-aws-modules/security-group/aws//modules/web"
   version = "4.17.0"
 
-  name        = "web-sg-project-alpha-dev"
+  name        = "web-sg-${var.resource_tags["project"]}-${var.resource_tags["environment"]}"
   description = "Security group for web-servers with HTTP ports open within VPC"
   vpc_id      = module.vpc.vpc_id
 
   ingress_cidr_blocks = module.vpc.public_subnets_cidr_blocks
 
-  tags = {
-    project     = "project-alpha",
-    environment = "dev"
-  }
+  tags = var.resource_tags
 }
 
 module "lb_security_group" {
   source  = "terraform-aws-modules/security-group/aws//modules/web"
   version = "4.17.0"
 
-  name        = "lb-sg-project-alpha-dev"
+  name        = "lb-sg-${var.resource_tags["project"]}-${var.resource_tags["environment"]}"
   description = "Security group for load balancer with HTTP ports open within VPC"
   vpc_id      = module.vpc.vpc_id
 
   ingress_cidr_blocks = ["0.0.0.0/0"]
 
-  tags = {
-    project     = "project-alpha",
-    environment = "dev"
-  }
+  tags = var.resource_tags
 }
 
 resource "random_string" "lb_id" {
@@ -70,7 +61,7 @@ module "elb_http" {
   version = "4.0.1"
 
   # Ensure load balancer name is unique
-  name = "lb-${random_string.lb_id.result}-project-alpha-dev"
+  name = "lb-${random_string.lb_id.result}-${var.resource_tags["project"]}-${var.resource_tags["environment"]}"
 
   internal = false
 
@@ -95,10 +86,7 @@ module "elb_http" {
     timeout             = 5
   }
 
-  tags = {
-    project     = "project-alpha",
-    environment = "dev"
-  }
+  tags = var.resource_tags
 }
 
 module "ec2_instances" {
@@ -111,8 +99,22 @@ module "ec2_instances" {
   subnet_ids         = module.vpc.private_subnets[*]
   security_group_ids = [module.app_security_group.security_group_id]
 
-  tags = {
-    project     = "project-alpha",
-    environment = "dev"
-  }
+  tags = var.resource_tags
+}
+
+resource "aws_db_subnet_group" "private" {
+  subnet_ids = module.vpc.private_subnets
+}
+
+resource "aws_db_instance" "database" {
+  allocated_storage = 5
+  engine            = "mysql"
+  engine_version    = "5.7"
+  instance_class    = "db.t3.micro"
+  username          = var.db_username
+  password          = var.db_password
+
+  db_subnet_group_name = aws_db_subnet_group.private.name
+
+  skip_final_snapshot = true
 }

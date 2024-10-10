@@ -56,7 +56,7 @@ variable "public_subnet_count" {
 }
 
 variable "public_subnet_cidr_blocks" {
-  description = ""
+  description = "cidr blocks of public subnet"
   type        = list(string)
   default = [
     "10.0.1.0/24",
@@ -70,4 +70,33 @@ variable "public_subnet_cidr_blocks" {
     "10.0.9.0/24",
     "10.0.10.0/24",
   ]
+}
+
+variable "resource_tags" {
+  type = map(string)
+  default = {
+    project     = "IaC-demo"
+    environment = "dev"
+  }
+  validation {
+    condition     = length(var.resource_tags["project"]) <= 16 && length(regexall("[^a-zA-Z0-9-]", var.resource_tags["project"])) == 0
+    error_message = "The project tag must be no more than 16 characters, and only contain letters, numbers, and hyphens."
+  }
+
+  validation {
+    condition     = length(var.resource_tags["environment"]) <= 8 && length(regexall("[^a-zA-Z0-9-]", var.resource_tags["environment"])) == 0
+    error_message = "The environment tag must be no more than 8 characters, and only contain letters, numbers, and hyphens."
+  }
+
+}
+
+variable "db_username" {
+    type = string
+    description = "username of aws db instance"
+    sensitive = true
+}
+variable "db_password" {
+    type = string
+    description = "password of aws db instance"
+    sensitive = true
 }
